@@ -13,8 +13,6 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-
 import io.github.controlwear.virtual.joystick.android.JoystickView;
 
 /**
@@ -118,20 +116,19 @@ public class FullscreenActivity extends AppCompatActivity {
         MulticastPublisher publisher = new MulticastPublisher();
         publisher.start();
         mControlsView.setOnMoveListener(new JoystickView.OnMoveListener() {
-            final JSONObject body = new JSONObject();
             @Override
             public void onMove(int angle, int strength) {
+                if (strength == 0 && angle == 0) {
+                    angle = 90; // Forward
+                } else {
+                    angle = angle > 180 ? -1 * (180 - angle % 180) : angle;
+                }
+
                 mAngle.setText("angle: " + angle);
                 mStrength.setText("strength: " + strength);
 
-                try {
-                    body.put("mAngle", angle);
-                    body.put("mStrength", angle);
-                } catch (JSONException e) {
-                    Log.e("json", e.getMessage());
-                }
-
                 publisher.speed = strength;
+                publisher.angle = angle;
             }
         });
 

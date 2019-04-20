@@ -6,23 +6,29 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.text.MessageFormat;
 
 public class MulticastPublisher extends Thread {
     private DatagramSocket socket;
     private InetAddress group;
     private byte[] buf;
     public volatile int speed = 0;
+    public volatile int angle = 0;
 
     @Override
     public void run() {
         super.run();
         int oldspeed = 0;
+        int oldangle = 0;
 
         while(true) {
-            if( speed == oldspeed) continue;
+            if( speed == oldspeed || angle == oldangle ) continue;
             try {
-                multicast((oldspeed = speed) + "");
-                Log.d("multicast", "multicasted!");
+                String msg = "{" + MessageFormat.format("\"speed\":{0}, \"angle\":{1}",
+                        new Object[]{speed, angle}) + "}";
+
+                multicast(msg);
+                Log.d("multicast", "multicasted! " + msg);
             } catch (IOException e) {
                 Log.e("messagebus", e.getMessage());
             }
